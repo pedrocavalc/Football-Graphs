@@ -1,118 +1,94 @@
-import networkx as nx
-import matplotlib.pyplot as plt
+class GrafoSimples:
+    """
+    Representa um grafo simples direcionado com vértices posicionados.
 
-class Grafo:
+    Atributos:
+    vertices (dict): Um dicionário que mapeia o nome do vértice para o objeto Vertice correspondente.
     """
-    Uma classe que representa um grafo usando a biblioteca NetworkX para armazenar
-    os dados do grafo e a biblioteca Matplotlib para visualização do grafo.
-    """
+
+    class Vertice:
+        """
+        Representa um vértice em um grafo.
+
+        Atributos:
+        nome (str): O nome identificador do vértice.
+        posicao (tuple): A posição do vértice, geralmente como um par de coordenadas (x, y).
+        arestas (list): Uma lista de tuplas representando as arestas e seus pesos para outros vértices.
+        """
+
+        def __init__(self, nome, posicao):
+            """
+            Inicializa um novo vértice com um nome e posição.
+
+            Parâmetros:
+            nome (str): O nome do vértice.
+            posicao (tuple): A posição do vértice.
+            """
+            self.nome = nome
+            self.posicao = posicao
+            self.arestas = []
 
     def __init__(self):
         """
-        Inicializa um objeto Grafo com um grafo vazio.
+        Inicializa um novo grafo simples sem vértices.
         """
-        self.grafo = nx.Graph()
+        self.vertices = {}  # Armazena os objetos Vertice
 
-    def adiciona_vertice(self, vertice):
+    def adiciona_vertice(self, nome, posicao):
         """
-        Adiciona um vértice ao grafo.
+        Adiciona um novo vértice ao grafo.
 
-        :param vertice: O rótulo do vértice a ser adicionado.
+        Parâmetros:
+        nome (str): O nome do vértice a ser adicionado.
+        posicao (tuple): A posição do vértice a ser adicionado.
         """
-        self.grafo.add_node(vertice)
+        if nome not in self.vertices:
+            self.vertices[nome] = GrafoSimples.Vertice(nome, posicao)
 
     def adiciona_aresta(self, de, para, peso):
         """
-        Adiciona uma aresta ponderada ao grafo.
+        Adiciona uma aresta direcionada e ponderada entre dois vértices no grafo.
 
-        :param de: O rótulo do vértice de origem da aresta.
-        :param para: O rótulo do vértice de destino da aresta.
-        :param peso: O peso da aresta, que neste contexto pode representar a probabilidade
-                     de sucesso de um passe entre os jogadores no campo de futebol.
+        Parâmetros:
+        de (str): O nome do vértice de origem.
+        para (str): O nome do vértice de destino.
+        peso (int/float): O peso da aresta.
         """
-        self.grafo.add_edge(de, para, weight=peso)
+        if de in self.vertices and para in self.vertices:
+            self.vertices[de].arestas.append((self.vertices[para], peso))
 
-    def visualizar(self, posicoes):
+    def visualizar(self):
         """
-        Visualiza o grafo com os vértices posicionados de acordo com o dicionário 'posicoes' fornecido.
-
-        :param posicoes: Um dicionário onde as chaves são os rótulos dos vértices e os valores
-                         são as coordenadas (x, y) para a posição de cada vértice no gráfico.
+        Imprime uma representação textual do grafo, mostrando vértices, suas posições e arestas.
         """
-        plt.figure(figsize=(12,7))
-        nx.draw_networkx_nodes(self.grafo, posicoes, node_size=700, node_color='lightblue')
-        nx.draw_networkx_labels(self.grafo, posicoes)
-        pesos = nx.get_edge_attributes(self.grafo, 'weight')
-        pesos_normalizados = [pesos[edge] * 5 for edge in self.grafo.edges()] 
-        nx.draw_networkx_edges(self.grafo, posicoes, width=pesos_normalizados)
-        nx.draw_networkx_edge_labels(self.grafo, posicoes, edge_labels=pesos)
-        plt.title("Visualização do Campo de Futebol como Grafo")
-        plt.show()
+        for vertice in self.vertices.values():
+            print(f"Vértice {vertice.nome} na posição {vertice.posicao}:")
+            for vizinho, peso in vertice.arestas:
+                print(f"  --({peso})--> {vizinho.nome} na posição {vizinho.posicao}")
 
-    def adiciona_arestas_completas(self, posicoes):
+    def get_posicao_vertice(self, nome):
         """
-        Conecta todos os vértices uns com os outros (grafo completo), com pesos inversamente
-        proporcionais à distância euclidiana entre os vértices no gráfico.
+        Retorna a posição de um vértice específico.
 
-        :param posicoes: Um dicionário de posições dos vértices como usado na função 'visualizar'.
+        Parâmetros:
+        nome (str): O nome do vértice.
+
+        Retorna:
+        tuple: A posição do vértice, ou uma mensagem de erro se o vértice não for encontrado.
         """
-        for jogador1 in posicoes:
-            for jogador2 in posicoes:
-                if jogador1 != jogador2:
-                    dist = self.distancia_euclidiana(posicoes[jogador1], posicoes[jogador2])
-                    peso = 1 / dist
-                    self.adiciona_aresta(jogador1, jogador2, round(peso, 2))
-
-    def distancia_euclidiana(self, pos_a, pos_b):
-        """
-        Calcula a distância euclidiana entre dois pontos.
-
-        :param pos_a: As coordenadas (x, y) do primeiro ponto.
-        :param pos_b: As coordenadas (x, y) do segundo ponto.
-        :return: A distância euclidiana entre os dois pontos.
-        """
-        return ((pos_a[0] - pos_b[0]) ** 2 + (pos_a[1] - pos_b[1]) ** 2) ** 0.5
+        if nome in self.vertices:
+            return self.vertices[nome].posicao
+        else:
+            return "Vértice não encontrado"
 
 
+g = GrafoSimples()
+g.adiciona_vertice("A", (100, 200))
+g.adiciona_vertice("B", (150, 250))
+g.adiciona_aresta("A", "B", 1)
+g.adiciona_aresta("B", "A", 2)
 
-g = Grafo()
-jogadores = ['João Ricardo', 'Titi', 'Britez', 'Tinga', 'Bruno Pacheco',
-             'Caio Alexandre', 'Zé Wellison', 'Caleb', 'Yago Pikachu',
-             'Guilherme', 'Galhardo']
+g.visualizar()
 
-
-
-if __name__ == "__main__":
-    for jogador in jogadores:
-        g.adiciona_vertice(jogador)
-
-
-    g.adiciona_aresta('João Ricardo', 'Titi', 0.9)
-    g.adiciona_aresta('João Ricardo', 'Britez', 0.9)
-    g.adiciona_aresta('Titi', 'Caio Alexandre', 0.8)
-    g.adiciona_aresta('Britez', 'Zé Wellison', 0.8)
-    g.adiciona_aresta('Tinga', 'Caleb', 0.8)
-    g.adiciona_aresta('Bruno Pacheco', 'Yago Pikachu', 0.8)
-    g.adiciona_aresta('Caio Alexandre', 'Guilherme', 0.7)
-    g.adiciona_aresta('Zé Wellison', 'Guilherme', 0.7)
-    g.adiciona_aresta('Caleb', 'Galhardo', 0.7)
-    g.adiciona_aresta('Yago Pikachu', 'Galhardo', 0.7)
-    posicoes = {
-        'João Ricardo': (1, 1),  
-        'Titi': (2, 2),           
-        'Britez': (2, 4),
-        'Tinga': (3, 1),
-        'Bruno Pacheco': (3, 5),
-        'Caio Alexandre': (4, 2), 
-        'Zé Wellison': (4, 4),
-        'Caleb': (5, 3),
-        'Yago Pikachu': (6, 1),  
-        'Guilherme': (6, 3),
-        'Galhardo': (6, 5)
-    }
-
-    g.adiciona_arestas_completas(posicoes)
-    g.visualizar(posicoes)
-    plt.show()
-    g.visualizar()
-    plt.show()
+print(g.get_posicao_vertice("A")) 
+print(g.get_posicao_vertice("C")) 
