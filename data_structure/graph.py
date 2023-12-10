@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+import math
 
 class GrafoSimples:
     """
@@ -59,18 +60,30 @@ class GrafoSimples:
         if nome not in self.vertices:
             self.vertices[nome] = GrafoSimples.Vertice(nome, posicao)
 
-    def adiciona_aresta(self, de, para, peso):
+    def calcula_distancia(self, pos1, pos2):
         """
-        Adiciona uma aresta direcionada e ponderada entre dois vértices no grafo.
+        Calcula a distância euclidiana entre dois pontos.
+
+        Parâmetros:
+        pos1 (tuple): A posição do primeiro ponto.
+        pos2 (tuple): A posição do segundo ponto.
+
+        Retorna:
+        float: A distância euclidiana entre os dois pontos.
+        """
+        return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
+
+    def adiciona_aresta(self, de, para):
+        """
+        Adiciona uma aresta direcionada entre dois vértices no grafo. O peso é baseado na distância entre os vértices.
 
         Parâmetros:
         de (str): O nome do vértice de origem.
         para (str): O nome do vértice de destino.
-        peso (int/float): O peso da aresta.
         """
         if de in self.vertices and para in self.vertices:
-            self.vertices[de].arestas.append((self.vertices[para], peso))
-
+            distancia = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao)
+            self.vertices[de].arestas.append((self.vertices[para], distancia))
     def visualizar(self):
         """
         Imprime uma representação textual do grafo, mostrando vértices, suas posições e arestas.
@@ -120,6 +133,14 @@ class GrafoSimples:
 
         plt.show()
 
+    def cria_grafo_completo(self):
+        """
+        Cria um grafo completo, adicionando uma aresta direcionada entre cada par de vértices.
+        """
+        for nome_vertice1 in self.vertices:
+            for nome_vertice2 in self.vertices:
+                if nome_vertice1 != nome_vertice2:
+                    self.adiciona_aresta(nome_vertice1, nome_vertice2)
 
     def encontra_caminho_mais_curto(self, origem, destino):
         """
@@ -135,37 +156,20 @@ class GrafoSimples:
         except nx.NetworkXNoPath:
             return "Não há caminho disponível."
 
+if __name__ == "__main__":
+    g = GrafoSimples()
+    g.adiciona_vertice("A", (100, 200))
+    g.adiciona_vertice("B", (150, 250))
+    g.adiciona_vertice("C", (300, 50))
+    g.adiciona_vertice("D", (350, 300))
+    g.adiciona_vertice("E", (230, 200))
+    g.cria_grafo_completo()
 
-g = GrafoSimples()
-g.adiciona_vertice("A", (100, 200))
-g.adiciona_vertice("B", (150, 250))
-g.adiciona_vertice("C", (300, 50))
-g.adiciona_vertice("D", (350, 300))
-g.adiciona_vertice("E", (230, 200))
-g.adiciona_aresta("A", "B", 1)
-g.adiciona_aresta("A", "C", 6)
-g.adiciona_aresta("A", "D", 8)
-g.adiciona_aresta("A", "E", 2)
-g.adiciona_aresta("B", "A", 1)
-g.adiciona_aresta("B", "C", 6)
-g.adiciona_aresta("B", "D", 5)
-g.adiciona_aresta("B", "E", 2)
-g.adiciona_aresta("C", "A", 6)
-g.adiciona_aresta("C", "B", 6)
-g.adiciona_aresta("C", "D", 8)
-g.adiciona_aresta("C", "E", 3)
-g.adiciona_aresta("D", "A", 8)
-g.adiciona_aresta("D", "B", 5)
-g.adiciona_aresta("D", "C", 8)
-g.adiciona_aresta("D", "E", 3)
-g.adiciona_aresta("E", "A", 2)
-g.adiciona_aresta("E", "B", 2)
-g.adiciona_aresta("E", "C", 3)
-g.adiciona_aresta("E", "D", 3)
+    print(g.get_posicao_vertice("A"))
+    print(g.get_posicao_vertice("C"))
+    print(g.encontra_caminho_mais_curto('A', 'C'))
+    g.visualizar()
+    g.plotar_grafo()
 
-
-print(g.get_posicao_vertice("A"))
-print(g.get_posicao_vertice("C"))
-print(g.encontra_caminho_mais_curto('A', 'C'))
-g.visualizar()
-g.plotar_grafo()
+    g.visualizar()
+    g.plotar_grafo()
