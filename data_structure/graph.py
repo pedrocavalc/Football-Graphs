@@ -164,14 +164,8 @@ g.adiciona_aresta("E", "C", 3)
 g.adiciona_aresta("E", "D", 3)
 
 
-
-
-
 print(g.get_posicao_vertice("A"))
 print(g.get_posicao_vertice("C"))
 print(g.encontra_caminho_mais_curto('A', 'C'))
 g.visualizar()
 g.plotar_grafo()
-
-
-
