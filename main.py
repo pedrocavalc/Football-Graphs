@@ -1,5 +1,4 @@
 from random import randint, shuffle, uniform
-import threading
 import pygame
 from typing import List, Tuple, Any
 
@@ -16,19 +15,19 @@ def process_event_bus():
     return False
 
 
-def get_player_positions() -> List[Tuple[int, int]]:
+def get_player_positions() -> List[Tuple[float, float]]:
     """Função temporária que retorna um exemplo de posicionamento para os jogadores."""
-    positions = [(0, 0),
-                 (1, -2), (1, -1), (1, 1), (1, 2),
-                 (2, -1), (2, 1),
-                 (4, -2), (4, 2),
-                 (5, -1), (5, 1)]
+    positions = [(0.0, 0.0),
+                 (1.0, -2.0), (1.0, -1.0), (1.0, 1.0), (1.0, 2.0),
+                 (2.0, -1.0), (2.0, 1.0),
+                 (4.0, -2.0), (4.0, 2.0),
+                 (5.0, -1.0), (5.0, 1.0)]
 
     # Modifica os valores internos de forma aleatória até o valor máximo de 4 antes do embaralhamento
     for i in range(1, len(positions)):
         x, y = positions[i]
         # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
-        positions[i] = (x, round(uniform(-2, 2)))
+        positions[i] = (x, round(uniform(-2.0, 2.0)))
 
     # Embaralha as posições excluindo a posição inicial (0, 0)
     #shuffle(positions[1:])
@@ -36,7 +35,7 @@ def get_player_positions() -> List[Tuple[int, int]]:
     return positions
 
 
-def generate_graph(jogadores: List[Any], posicoes: List[Tuple[int, int]]):
+def generate_graph(jogadores: List[Any], posicoes: List[Tuple[float, float]]):
     """Gera um grafo simples, sem arestas, e com os jogadores
     como vértices."""
     grafo = GrafoSimples()
@@ -73,7 +72,6 @@ if __name__ == "__main__":
                  "Augusto", "André", "Guimarães", "Rodrygo",
                  "Raphinha", "Jesus", "Martinelli"]
     posicoes = get_player_positions()
-    threading.Timer(5.0, __name__).start()
     pygame.init()
     update_positions()
 
