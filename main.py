@@ -2,18 +2,38 @@ from random import uniform
 import pygame
 import pygame_gui
 from typing import List, Tuple, Any
+from enum import Enum
+import random
 
 from gui.gui import InterfaceDrawer
 from data_structure.graph import GrafoSimples
 
 
-def process_event_bus():
+class EventType(Enum):
+    NONE = 0
+    QUIT = 1
+    PLAY = 2
+    NEXT = 3
+
+
+def process_event_bus(tamanho):
     """Função que processa a fila de eventos do PyGame. Necessária
     Para fechar o programa normalmente."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return True
-    return False
+            return EventType.QUIT
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            
+            if mouse_y > tamanho[1] - (tamanho[1] / 6):
+                if mouse_x < tamanho[0] / 6:
+                    return EventType.PLAY
+                
+                if mouse_x > tamanho[0] - (tamanho[0] / 6):
+                    return EventType.NEXT
+            
+    return EventType.NONE
 
 
 def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, int]]:
@@ -176,13 +196,21 @@ def main_menu(screen):
     pygame.quit()
 
 
+def draw_screen(gui):
+    gui.draw_background()
+    gui.draw_edges(grafo, (255, 255, 255))
+    gui.draw_players(grafo, (255, 255, 255))
+    gui.draw_players(grafo_two, (255, 255, 0))
+    gui.draw_button("Play", False)
+    gui.draw_button("Next", True)
+    gui.draw_score()
+
 
 if __name__ == "__main__":
     TAMANHO_TELA = (1600, 900)
-    COR_CIRCULO = (255, 255, 255)
 
     pygame.init()
-    tela = pygame.display.set_mode((800, 600))
+    tela = pygame.display.set_mode(TAMANHO_TELA)
     formacao_time_1, formacao_time_2 = main_menu(tela)
 
     jogadores_time_1 = ["Alisson", "Royal", "Marquinhos", "Magalhães",
@@ -203,34 +231,25 @@ if __name__ == "__main__":
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
     grafo_two.visualizar()
 
-    pygame.init()
     tela = pygame.display.set_mode(TAMANHO_TELA)
     interface = InterfaceDrawer(tela, "assets/pitch.jpg")
-
-    interface.draw_background()
-    interface.draw_edges(grafo, (255, 0, 0))
-    interface.draw_edges(grafo_two, (255, 0, 0))
-    interface.draw_players(grafo, COR_CIRCULO)
-    interface.draw_players(grafo_two, (255, 255, 0))
-
+    draw_screen(interface)
+    
     quit = False
     clock = pygame.time.Clock()
 
     while not quit:
-        quit = process_event_bus()
-
-        interface.draw_background()
-        interface.draw_edges(grafo, (255, 0, 0))
-        interface.draw_edges(grafo_two, (255, 0, 0))
-        interface.draw_players(grafo, COR_CIRCULO)
-        interface.draw_players(grafo_two, (255, 255, 0))
-
-        pygame.display.flip()
-        clock.tick(1)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        event = process_event_bus(TAMANHO_TELA)
+        
+        match event:
+            case EventType.QUIT:
                 quit = True
-            elif event.type == pygame.USEREVENT:
+            case EventType.PLAY:
+                if random.random() < 0.5:
+                    interface.score += 1
+                    draw_screen(interface)
+            case EventType.NEXT:
                 update_positions(formacao_time_1, formacao_time_2)
-
-    pygame.quit()
+                draw_screen(interface)
+            case _:
+                pass
