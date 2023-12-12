@@ -75,17 +75,29 @@ class GrafoSimples:
 
     def adiciona_aresta(self, de, para, time_inimigo):
         """
-        Adiciona uma aresta direcionada entre dois vértices no grafo. O peso é baseado na distância entre os vértices.
+        Adiciona uma aresta direcionada entre dois vértices no grafo. O peso é baseado na distância entre os vértices,
+        proximidade ao gol e proximidade de adversários.
 
         Parâmetros:
         de (str): O nome do vértice de origem.
         para (str): O nome do vértice de destino.
         """
         if de in self.vertices and para in self.vertices:
-            distancia_para_marcador = self.distancia_marcador(de, time_inimigo)
-            peso_marcador = 1/distancia_para_marcador
-            distancia = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao) ** 2
-            peso_final = (peso_marcador*2*distancia) ** 2
+            distancia_passe = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao)
+            distancia_ao_gol = self.calcula_distancia(self.vertices[de].posicao, (5.5, 0))
+            distancia_para_marcador = self.distancia_marcador(para, time_inimigo)
+
+            # Quanto mais longe o passe, maior o peso
+            peso_distancia = distancia_passe ** 3
+
+            # Quanto mais perto do gol, menor o peso
+            peso_gol = max(1 - (distancia_ao_gol / 5), 0) ** 5
+
+            # Quanto mais próximo do marcador, maior o peso
+            peso_marcador = (1 / max(distancia_para_marcador, 0.1)) ** 3.1
+
+            # Combinar os fatores para o peso final
+            peso_final = peso_distancia * (1 + peso_marcador - peso_gol)
             self.vertices[de].arestas.append((self.vertices[para], peso_final))
             
     def distancia_marcador(self, vertice, time_inimigo):
@@ -142,7 +154,7 @@ class GrafoSimples:
 
         plt.show()
 
-    def cria_grafo_completo(self, time_inimigo):
+    def cria_grafo_completo(self, time_inimigo,):
         """
         Cria um grafo completo, adicionando uma aresta direcionada entre cada par de vértices.
         """

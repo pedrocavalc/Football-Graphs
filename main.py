@@ -279,11 +279,12 @@ if __name__ == "__main__":
             case EventType.PLAY:
                 caminho_ate_o_gol = grafo.encontra_caminho_mais_curto("Alisson", "Gol")
                 
-                if random.random() < 0.2:
+                if random.random() < 100:
                     interface.score += 1
                     draw_screen(interface, caminho_ate_o_gol)
             case EventType.NEXT:
                 update_positions(formacao_time_1, formacao_time_2)
+                interface.score = 0
                 draw_screen(interface)
             case _:
                 pass
