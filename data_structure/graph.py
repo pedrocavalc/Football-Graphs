@@ -88,7 +88,7 @@ class GrafoSimples:
             distancia_para_marcador = self.distancia_marcador(para, time_inimigo)
 
             # Quanto mais longe o passe, maior o peso
-            peso_distancia = distancia_passe ** 3
+            peso_distancia = distancia_passe ** 3.3
 
             # Quanto mais perto do gol, menor o peso
             peso_gol = max(1 - (distancia_ao_gol / 5), 0) ** 5
