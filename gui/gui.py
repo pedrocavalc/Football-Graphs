@@ -15,7 +15,7 @@ class InterfaceDrawer:
             background_path (str): Um path para uma imagem que servirá de fundo.
         """
         self.screen = tela
-        self.font = pygame.font.SysFont(None, 24)
+        self.font = pygame.font.SysFont(None, 15)
 
         background = pygame.image.load(background_path)
         self.background = pygame.transform.scale(background, tela.get_size())
@@ -29,7 +29,7 @@ class InterfaceDrawer:
         """
         for vertice in grafo.vertices.values():
             posicao = posicao_para_coordenada(vertice.posicao, self.screen.get_size())
-            pygame.draw.circle(self.screen, cor_jogador, posicao, 50)
+            pygame.draw.circle(self.screen, cor_jogador, posicao, 30)
 
             text = self.font.render(vertice.nome, True, (255, 0, 0))
             text_rect = text.get_rect(center=posicao)
