@@ -170,22 +170,10 @@ if __name__ == "__main__":
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
 
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
-    grafo.adiciona_aresta("Martinelli", "Jesus")
-    grafo.adiciona_aresta("André", "Raphinha")
-    grafo.adiciona_aresta("André", "Guimarães")
-    grafo.adiciona_aresta("André", "Raphinha")
-    grafo.adiciona_aresta("Rodrygo", "Raphinha")
-    grafo.adiciona_aresta("Rodrygo", "Martinelli")
-    grafo.adiciona_aresta("Royal", "André")
-    grafo.adiciona_aresta("Marquinhos", "André")
-    grafo.adiciona_aresta("Royal", "Rodrygo")
+    grafo.cria_grafo_completo()
     grafo.visualizar()
 
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
-    grafo_two.adiciona_aresta("Daniel", "Eduardo")
-    grafo_two.adiciona_aresta("Fernando", "Gabriel")
-    grafo_two.adiciona_aresta("Fernando", "Eduardo")
-    grafo_two.adiciona_aresta("Daniel", "Igor")
     grafo_two.visualizar()
 
     pygame.init()
@@ -195,7 +183,6 @@ if __name__ == "__main__":
     interface.draw_background()
     interface.draw_edges(grafo, (255, 0, 0))
     interface.draw_players(grafo, COR_CIRCULO)
-    interface.draw_edges(grafo_two, (255, 255, 0))
     interface.draw_players(grafo_two, (255, 255, 0))
 
     quit = False
