@@ -44,14 +44,14 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
             (1, -2), (1, -1), (1, 1), (1, 2),
 
             (3, -2), (2, 0), (3, 2),
-            (4, -2),(4, 0),(4,2)]
+            (4, -2),(4, 0),(4,2), (5.6,0)]
     if(formacao_time_1 == "4-4-2"):
         posicao_time_1 = [(0, 0),
             (1, -2), (1, -1), (1, 1), (1, 2),
             (2, -1), (2, 1),
 
             (3, -2), (3, 2),
-            (4, -1), (4, 1)]
+            (4, -1), (4, 1) , (5.6,0)]
     if(formacao_time_1 == "4-5-1"):
         posicao_time_1 = [(0, 0),
             (1, -2), (1, -1), (1, 1), (1, 2),
@@ -59,7 +59,7 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
             (2.5, 0),
 
             (3, -2), (3, 2),
-            (4, 0)]
+            (4, 0), (5.6,0)]
 
     if(formacao_time_2 == "4-3-3"):
         posicao_time_2 = [(5.2, 0),
@@ -115,7 +115,7 @@ def atualizar_posicoes_sem_sobreposicao(posicoes_time_1, posicoes_time_2):
 
     # Atualizar posições para ambos os times
     for time_posicoes in [posicoes_time_1, posicoes_time_2]:
-        for i in range(1, len(time_posicoes)):  # Ignora o goleiro
+        for i in range(1, len(time_posicoes)-1):  # Ignora o goleiro e o gol
             nova_pos = (round(uniform(0, limite_x), 1), round(uniform(-limite_y, limite_y), 1))
 
             # Verificar proximidade com outros jogadores de ambos os times
@@ -224,7 +224,7 @@ def main_menu(screen):
     pygame.quit()
 
 
-def draw_screen(gui):
+def draw_screen(gui, caminho=None):
     gui.draw_background()
     gui.draw_edges(grafo, (255, 255, 255))
     gui.draw_players(grafo, (255, 255, 255))
@@ -232,6 +232,8 @@ def draw_screen(gui):
     gui.draw_button("Play", False)
     gui.draw_button("Next", True)
     gui.draw_score()
+    if caminho:
+        gui.draw_path(grafo, caminho, (255, 0, 255))
 
 
 if __name__ == "__main__":
@@ -243,7 +245,7 @@ if __name__ == "__main__":
 
     jogadores_time_1 = ["Alisson", "Royal", "Marquinhos", "Magalhães",
                  "Augusto", "André", "Guimarães", "Rodrygo",
-                 "Raphinha", "Jesus", "Martinelli"]
+                 "Raphinha", "Jesus", "Martinelli", "Gol"]
     jogadores_time_2 = [
     "Bruno", "Carlos", "Daniel", "Eduardo", "Fernando", "Gabriel",
     "Henrique", "Igor", "João", "Lucas", "Matheus"]
@@ -275,11 +277,11 @@ if __name__ == "__main__":
                 quit = True
                 break
             case EventType.PLAY:
-                print(grafo.encontra_caminho_mais_curto("Alisson", "Jesus"))
+                caminho_ate_o_gol = grafo.encontra_caminho_mais_curto("Alisson", "Gol")
                 
                 if random.random() < 0.2:
                     interface.score += 1
-                    draw_screen(interface)
+                    draw_screen(interface, caminho_ate_o_gol)
             case EventType.NEXT:
                 update_positions(formacao_time_1, formacao_time_2)
                 draw_screen(interface)

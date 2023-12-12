@@ -85,7 +85,7 @@ class GrafoSimples:
             distancia_para_marcador = self.distancia_marcador(de, time_inimigo)
             peso_marcador = 1/distancia_para_marcador
             distancia = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao) ** 2
-            peso_final = (peso_marcador*distancia) ** 2
+            peso_final = (peso_marcador*2*distancia) ** 2
             self.vertices[de].arestas.append((self.vertices[para], peso_final))
             
     def distancia_marcador(self, vertice, time_inimigo):

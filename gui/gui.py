@@ -54,6 +54,24 @@ class InterfaceDrawer:
 
         pygame.display.update()
 
+    def draw_path(self, grafo: GrafoSimples, caminho: List[str], cor_linha: pygame.Vector3):
+        """Dado um grafo simples e um caminho, desenha as arestas do caminho na tela do PyGame.
+        
+        args:
+            grafo (GrafoSimples): um grafo para desenhar.
+            caminho (List[str]): uma lista de nomes de vértices representando o caminho.
+            cor_linha (pygame.Vector3): uma cor, em RGB, para as linhas do caminho.
+        """
+        for i in range(len(caminho) - 1):
+            vertice_atual = grafo.vertices[caminho[i]]
+            vertice_proximo = grafo.vertices[caminho[i + 1]]
+
+            pos_inicial = posicao_para_coordenada(vertice_atual.posicao, self.screen.get_size())
+            pos_final = posicao_para_coordenada(vertice_proximo.posicao, self.screen.get_size())
+            pygame.draw.line(self.screen, cor_linha, pos_inicial, pos_final, 5)
+
+        pygame.display.update()
+
     def draw_background(self):
         """Desenha o fundo designado na tela do PyGame."""
         black = (0, 0, 0)
