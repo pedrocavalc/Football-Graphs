@@ -137,10 +137,9 @@ def update_positions(formacao_time_1, formacao_time_2):
 
     # Atualizar grafos
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
-    grafo.cria_grafo_completo()
+    grafo.cria_grafo_completo(grafo_two)
 
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
-    grafo_two.cria_grafo_completo()
 
     # Visualizar grafos (Opcional, para depuração)
     grafo.visualizar()
@@ -254,11 +253,12 @@ if __name__ == "__main__":
     #update_positions(formacao_time_1, formacao_time_2)
 
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
-    grafo.cria_grafo_completo()
-    grafo.visualizar()
-
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
-    grafo_two.visualizar()
+    
+    grafo.cria_grafo_completo(grafo_two)
+    #grafo.visualizar()
+
+    #grafo_two.visualizar()
 
     tela = pygame.display.set_mode(TAMANHO_TELA)
     interface = InterfaceDrawer(tela, "assets/pitch.jpg")
@@ -273,8 +273,11 @@ if __name__ == "__main__":
         match event:
             case EventType.QUIT:
                 quit = True
+                break
             case EventType.PLAY:
-                if random.random() < 0.5:
+                print(grafo.encontra_caminho_mais_curto("Alisson", "Jesus"))
+                
+                if random.random() < 0.2:
                     interface.score += 1
                     draw_screen(interface)
             case EventType.NEXT:
