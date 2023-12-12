@@ -73,7 +73,7 @@ class GrafoSimples:
         """
         return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
 
-    def adiciona_aresta(self, de, para):
+    def adiciona_aresta(self, de, para, time_inimigo):
         """
         Adiciona uma aresta direcionada entre dois vértices no grafo. O peso é baseado na distância entre os vértices.
 
@@ -82,8 +82,17 @@ class GrafoSimples:
         para (str): O nome do vértice de destino.
         """
         if de in self.vertices and para in self.vertices:
-            distancia = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao)
-            self.vertices[de].arestas.append((self.vertices[para], distancia))
+            distancia_para_marcador = self.distancia_marcador(de, time_inimigo)
+            peso_marcador = 1/distancia_para_marcador
+            distancia = self.calcula_distancia(self.vertices[de].posicao, self.vertices[para].posicao) ** 2
+            peso_final = (peso_marcador*2*distancia) ** 2
+            self.vertices[de].arestas.append((self.vertices[para], peso_final))
+            
+    def distancia_marcador(self, vertice, time_inimigo):
+        pos_vertice = self.vertices[vertice].posicao
+        distancias = [self.calcula_distancia(pos_vertice, time_inimigo.vertices[x].posicao) for x in time_inimigo.vertices]
+        return min(distancias)
+            
     def visualizar(self):
         """
         Imprime uma representação textual do grafo, mostrando vértices, suas posições e arestas.
@@ -133,14 +142,14 @@ class GrafoSimples:
 
         plt.show()
 
-    def cria_grafo_completo(self):
+    def cria_grafo_completo(self, time_inimigo):
         """
         Cria um grafo completo, adicionando uma aresta direcionada entre cada par de vértices.
         """
         for nome_vertice1 in self.vertices:
             for nome_vertice2 in self.vertices:
                 if nome_vertice1 != nome_vertice2:
-                    self.adiciona_aresta(nome_vertice1, nome_vertice2)
+                    self.adiciona_aresta(nome_vertice1, nome_vertice2, time_inimigo)
 
     def encontra_caminho_mais_curto(self, origem, destino):
         """
@@ -157,7 +166,8 @@ class GrafoSimples:
             return "Não há caminho disponível."
 
 if __name__ == "__main__":
-    g = GrafoSimples()
+    pass
+"""     g = GrafoSimples()
     g.adiciona_vertice("A", (100, 200))
     g.adiciona_vertice("B", (150, 250))
     g.adiciona_vertice("C", (300, 50))
@@ -172,4 +182,4 @@ if __name__ == "__main__":
     g.plotar_grafo()
 
     g.visualizar()
-    g.plotar_grafo()
+    g.plotar_grafo() """

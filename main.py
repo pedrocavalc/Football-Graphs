@@ -2,18 +2,38 @@ from random import uniform
 import pygame
 import pygame_gui
 from typing import List, Tuple, Any
-
+from enum import Enum
+import random
+import math
 from gui.gui import InterfaceDrawer
 from data_structure.graph import GrafoSimples
 
 
-def process_event_bus():
+class EventType(Enum):
+    NONE = 0
+    QUIT = 1
+    PLAY = 2
+    NEXT = 3
+
+
+def process_event_bus(tamanho):
     """Função que processa a fila de eventos do PyGame. Necessária
     Para fechar o programa normalmente."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return True
-    return False
+            return EventType.QUIT
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            
+            if mouse_y > tamanho[1] - (tamanho[1] / 6):
+                if mouse_x < tamanho[0] / 6:
+                    return EventType.PLAY
+                
+                if mouse_x > tamanho[0] - (tamanho[0] / 6):
+                    return EventType.NEXT
+            
+    return EventType.NONE
 
 
 def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, int]]:
@@ -24,14 +44,14 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
             (1, -2), (1, -1), (1, 1), (1, 2),
 
             (3, -2), (2, 0), (3, 2),
-            (4, -2),(4, 0),(4,2)]
+            (4, -2),(4, 0),(4,2), (5.6,0)]
     if(formacao_time_1 == "4-4-2"):
         posicao_time_1 = [(0, 0),
             (1, -2), (1, -1), (1, 1), (1, 2),
             (2, -1), (2, 1),
 
             (3, -2), (3, 2),
-            (4, -1), (4, 1)]
+            (4, -1), (4, 1) , (5.6,0)]
     if(formacao_time_1 == "4-5-1"):
         posicao_time_1 = [(0, 0),
             (1, -2), (1, -1), (1, 1), (1, 2),
@@ -39,7 +59,7 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
             (2.5, 0),
 
             (3, -2), (3, 2),
-            (4, 0)]
+            (4, 0), (5.6,0)]
 
     if(formacao_time_2 == "4-3-3"):
         posicao_time_2 = [(5.2, 0),
@@ -65,13 +85,12 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
         
     for i in range(1, len(posicao_time_1)):
         x, y = posicao_time_1[i]
-        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
-        posicao_time_1[i] = (x, round(uniform(-2.0, 2.0)))
+        
+        posicao_time_1[i] = (x, y)
     
     for i in range(1, len(posicao_time_2)):
         x, y = posicao_time_2[i]
-        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
-        posicao_time_2[i] = (x, round(uniform(-2.0, 2.0)))
+        posicao_time_2[i] = (x, y)
 
     return posicao_time_1, posicao_time_2
 
@@ -86,17 +105,46 @@ def generate_graph(jogadores: List[Any], posicoes: List[Tuple[int, int]]):
     return grafo
 
 
+def atualizar_posicoes_sem_sobreposicao(posicoes_time_1, posicoes_time_2):
+    limite_x, limite_y = 5.0, 2.0  # Limites do campo
+    proximidade_minima = 0.6  # Distância mínima permitida entre jogadores
+
+    # Função para verificar a proximidade entre dois pontos
+    def muito_proxima(pos1, pos2):
+        return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2) < proximidade_minima
+
+    # Atualizar posições para ambos os times
+    for time_posicoes in [posicoes_time_1, posicoes_time_2]:
+        for i in range(1, len(time_posicoes)-1):  # Ignora o goleiro e o gol
+            nova_pos = (round(uniform(0, limite_x), 1), round(uniform(-limite_y, limite_y), 1))
+
+            # Verificar proximidade com outros jogadores de ambos os times
+            while any(muito_proxima(nova_pos, p) for p in posicoes_time_1 + posicoes_time_2 if p != time_posicoes[i]):
+                nova_pos = (round(uniform(0, limite_x), 1), round(uniform(-limite_y, limite_y), 1))
+
+            time_posicoes[i] = nova_pos
+
+    return posicoes_time_1, posicoes_time_2
+
 def update_positions(formacao_time_1, formacao_time_2):
     global posicoes_time_1, posicoes_time_2, grafo, grafo_two
 
+    # Obter posições iniciais baseadas na formação
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
+
+    # Atualizar posições sem sobreposição
+    posicoes_time_1, posicoes_time_2 = atualizar_posicoes_sem_sobreposicao(posicoes_time_1, posicoes_time_2)
+
+    # Atualizar grafos
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
-    grafo.cria_grafo_completo()
-    grafo.visualizar()
+    grafo.cria_grafo_completo(grafo_two)
 
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
+
+    # Visualizar grafos (Opcional, para depuração)
+    grafo.visualizar()
     grafo_two.visualizar()
-    pygame.time.set_timer(pygame.USEREVENT, 5000)  # Define um evento do Pygame para ocorrer a cada 5 segundos
+    
 
 
 def main_menu(screen):
@@ -176,61 +224,66 @@ def main_menu(screen):
     pygame.quit()
 
 
+def draw_screen(gui, caminho=None):
+    gui.draw_background()
+    gui.draw_edges(grafo, (255, 255, 255))
+    gui.draw_players(grafo, (255, 255, 255))
+    gui.draw_players(grafo_two, (255, 255, 0))
+    gui.draw_button("Play", False)
+    gui.draw_button("Next", True)
+    gui.draw_score()
+    if caminho:
+        gui.draw_path(grafo, caminho, (255, 0, 255))
+
 
 if __name__ == "__main__":
-    TAMANHO_TELA = (1600, 900)
-    COR_CIRCULO = (255, 255, 255)
+    TAMANHO_TELA = (1280, 720)
 
     pygame.init()
-    tela = pygame.display.set_mode((800, 600))
+    tela = pygame.display.set_mode(TAMANHO_TELA)
     formacao_time_1, formacao_time_2 = main_menu(tela)
 
     jogadores_time_1 = ["Alisson", "Royal", "Marquinhos", "Magalhães",
                  "Augusto", "André", "Guimarães", "Rodrygo",
-                 "Raphinha", "Jesus", "Martinelli"]
+                 "Raphinha", "Jesus", "Martinelli", "Gol"]
     jogadores_time_2 = [
     "Bruno", "Carlos", "Daniel", "Eduardo", "Fernando", "Gabriel",
     "Henrique", "Igor", "João", "Lucas", "Matheus"]
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
 
     pygame.init()
-    update_positions(formacao_time_1, formacao_time_2)
+    #update_positions(formacao_time_1, formacao_time_2)
 
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
-    grafo.cria_grafo_completo()
-    grafo.visualizar()
-
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
-    grafo_two.visualizar()
+    
+    grafo.cria_grafo_completo(grafo_two)
+    #grafo.visualizar()
 
-    pygame.init()
+    #grafo_two.visualizar()
+
     tela = pygame.display.set_mode(TAMANHO_TELA)
     interface = InterfaceDrawer(tela, "assets/pitch.jpg")
-
-    interface.draw_background()
-    interface.draw_edges(grafo, (255, 0, 0))
-    interface.draw_edges(grafo_two, (255, 0, 0))
-    interface.draw_players(grafo, COR_CIRCULO)
-    interface.draw_players(grafo_two, (255, 255, 0))
-
+    draw_screen(interface)
+    
     quit = False
     clock = pygame.time.Clock()
 
     while not quit:
-        quit = process_event_bus()
-
-        interface.draw_background()
-        interface.draw_edges(grafo, (255, 0, 0))
-        interface.draw_edges(grafo_two, (255, 0, 0))
-        interface.draw_players(grafo, COR_CIRCULO)
-        interface.draw_players(grafo_two, (255, 255, 0))
-
-        pygame.display.flip()
-        clock.tick(1)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        event = process_event_bus(TAMANHO_TELA)
+        
+        match event:
+            case EventType.QUIT:
                 quit = True
-            elif event.type == pygame.USEREVENT:
+                break
+            case EventType.PLAY:
+                caminho_ate_o_gol = grafo.encontra_caminho_mais_curto("Alisson", "Gol")
+                
+                if random.random() < 0.2:
+                    interface.score += 1
+                    draw_screen(interface, caminho_ate_o_gol)
+            case EventType.NEXT:
                 update_positions(formacao_time_1, formacao_time_2)
-
-    pygame.quit()
+                draw_screen(interface)
+            case _:
+                pass
