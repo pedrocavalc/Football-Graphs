@@ -1,3 +1,4 @@
+from random import uniform
 import pygame
 import pygame_gui
 from typing import List, Tuple, Any
@@ -61,6 +62,16 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
 
             (2.2, -2), (2.2, 2),
             (1.2, 0)]
+        
+    for i in range(1, len(posicao_time_1)):
+        x, y = posicao_time_1[i]
+        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
+        posicao_time_1[i] = (x, round(uniform(-2.0, 2.0)))
+    
+    for i in range(1, len(posicao_time_2)):
+        x, y = posicao_time_2[i]
+        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
+        posicao_time_2[i] = (x, round(uniform(-2.0, 2.0)))
 
     return posicao_time_1, posicao_time_2
 
@@ -73,6 +84,19 @@ def generate_graph(jogadores: List[Any], posicoes: List[Tuple[int, int]]):
         grafo.adiciona_vertice(jogador, posicao)
 
     return grafo
+
+
+def update_positions(formacao_time_1, formacao_time_2):
+    global posicoes_time_1, posicoes_time_2, grafo, grafo_two
+
+    posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
+    grafo = generate_graph(jogadores_time_1, posicoes_time_1)
+    grafo.cria_grafo_completo()
+    grafo.visualizar()
+
+    grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
+    grafo_two.visualizar()
+    pygame.time.set_timer(pygame.USEREVENT, 5000)  # Define um evento do Pygame para ocorrer a cada 5 segundos
 
 
 def main_menu(screen):
@@ -169,6 +193,9 @@ if __name__ == "__main__":
     "Henrique", "Igor", "João", "Lucas", "Matheus"]
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
 
+    pygame.init()
+    update_positions(formacao_time_1, formacao_time_2)
+
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
     grafo.cria_grafo_completo()
     grafo.visualizar()
@@ -182,9 +209,28 @@ if __name__ == "__main__":
 
     interface.draw_background()
     interface.draw_edges(grafo, (255, 0, 0))
+    interface.draw_edges(grafo_two, (255, 0, 0))
     interface.draw_players(grafo, COR_CIRCULO)
     interface.draw_players(grafo_two, (255, 255, 0))
 
     quit = False
+    clock = pygame.time.Clock()
+
     while not quit:
         quit = process_event_bus()
+
+        interface.draw_background()
+        interface.draw_edges(grafo, (255, 0, 0))
+        interface.draw_edges(grafo_two, (255, 0, 0))
+        interface.draw_players(grafo, COR_CIRCULO)
+        interface.draw_players(grafo_two, (255, 255, 0))
+
+        pygame.display.flip()
+        clock.tick(1)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit = True
+            elif event.type == pygame.USEREVENT:
+                update_positions(formacao_time_1, formacao_time_2)
+
+    pygame.quit()
