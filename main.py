@@ -4,7 +4,7 @@ import pygame_gui
 from typing import List, Tuple, Any
 from enum import Enum
 import random
-
+import math
 from gui.gui import InterfaceDrawer
 from data_structure.graph import GrafoSimples
 
@@ -85,13 +85,12 @@ def get_player_positions(formacao_time_1, formacao_time_2) -> List[Tuple[int, in
         
     for i in range(1, len(posicao_time_1)):
         x, y = posicao_time_1[i]
-        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
-        posicao_time_1[i] = (x, round(uniform(-2.0, 2.0)))
+        
+        posicao_time_1[i] = (x, y)
     
     for i in range(1, len(posicao_time_2)):
         x, y = posicao_time_2[i]
-        # Exemplo: Modifica y para um valor aleatório entre y-2 e o mínimo entre y+2 e 4
-        posicao_time_2[i] = (x, round(uniform(-2.0, 2.0)))
+        posicao_time_2[i] = (x, y)
 
     return posicao_time_1, posicao_time_2
 
@@ -106,17 +105,47 @@ def generate_graph(jogadores: List[Any], posicoes: List[Tuple[int, int]]):
     return grafo
 
 
+def atualizar_posicoes_sem_sobreposicao(posicoes_time_1, posicoes_time_2):
+    limite_x, limite_y = 5.0, 2.0  # Limites do campo
+    proximidade_minima = 0.6  # Distância mínima permitida entre jogadores
+
+    # Função para verificar a proximidade entre dois pontos
+    def muito_proxima(pos1, pos2):
+        return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2) < proximidade_minima
+
+    # Atualizar posições para ambos os times
+    for time_posicoes in [posicoes_time_1, posicoes_time_2]:
+        for i in range(1, len(time_posicoes)):  # Ignora o goleiro
+            nova_pos = (round(uniform(0, limite_x), 1), round(uniform(-limite_y, limite_y), 1))
+
+            # Verificar proximidade com outros jogadores de ambos os times
+            while any(muito_proxima(nova_pos, p) for p in posicoes_time_1 + posicoes_time_2 if p != time_posicoes[i]):
+                nova_pos = (round(uniform(0, limite_x), 1), round(uniform(-limite_y, limite_y), 1))
+
+            time_posicoes[i] = nova_pos
+
+    return posicoes_time_1, posicoes_time_2
+
 def update_positions(formacao_time_1, formacao_time_2):
     global posicoes_time_1, posicoes_time_2, grafo, grafo_two
 
+    # Obter posições iniciais baseadas na formação
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
+
+    # Atualizar posições sem sobreposição
+    posicoes_time_1, posicoes_time_2 = atualizar_posicoes_sem_sobreposicao(posicoes_time_1, posicoes_time_2)
+
+    # Atualizar grafos
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
     grafo.cria_grafo_completo()
-    grafo.visualizar()
 
     grafo_two = generate_graph(jogadores_time_2, posicoes_time_2)
+    grafo_two.cria_grafo_completo()
+
+    # Visualizar grafos (Opcional, para depuração)
+    grafo.visualizar()
     grafo_two.visualizar()
-    pygame.time.set_timer(pygame.USEREVENT, 5000)  # Define um evento do Pygame para ocorrer a cada 5 segundos
+    
 
 
 def main_menu(screen):
@@ -207,7 +236,7 @@ def draw_screen(gui):
 
 
 if __name__ == "__main__":
-    TAMANHO_TELA = (1600, 900)
+    TAMANHO_TELA = (1280, 720)
 
     pygame.init()
     tela = pygame.display.set_mode(TAMANHO_TELA)
@@ -222,7 +251,7 @@ if __name__ == "__main__":
     posicoes_time_1, posicoes_time_2 = get_player_positions(formacao_time_1, formacao_time_2)
 
     pygame.init()
-    update_positions(formacao_time_1, formacao_time_2)
+    #update_positions(formacao_time_1, formacao_time_2)
 
     grafo = generate_graph(jogadores_time_1, posicoes_time_1)
     grafo.cria_grafo_completo()
